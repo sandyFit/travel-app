@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const App = () => {
     const [items, setItems] = useState([]);
@@ -43,50 +43,47 @@ const Form = ({ onAddItem }) => {
         
     }
 
-    return <div className="add-form">
+    return <form
+        className="add-form"
+        onSubmit={handleSubmit}>
         <h3>
             What do you need for your 😍 trip?
         </h3>
 
-        <form onSubmit={handleSubmit}>
+        <div >
 
             <select name='quantity'
                 id='quantity'
                 value={quantity}
                 onChange={e => setQuantity(Number(e.target.value))}
             >
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>            
+                {Array.from({ length: 20 }, (_, index) => index + 1).
+                    map(num => (
+                        <option value={num} key={num}>{num}</option>
+                    ))}        
             </select>
 
             <input type="text"
                 name="item"
                 placeholder='Item...'
                 value={ item }
-                onChange={e => setItem(e.target.value)}
+                 onChange={e => setItem(e.target.value)}
                 
             />
             
             <button>add</button>
-        </form>
+        </div>
 
-    </div>
+    </form>
 }
 
 const PackingList = ({items}) => { 
     return <div className="list">
-        {items.map((item, index) => (
-                <div key={index} >
-                    <input type="checkbox" />
-                    <span>{`${item.quantity} ${item.name}`}</span>
-                </div>
-        ))}
+        <ul>            
+            {items.map((item, index) => (
+                <Item key={index} item={item} />
+            ))}
+        </ul>
         
         <div style={{display: 'flex', gap: '15px'}}>
             <button>sort by input order</button>
@@ -95,9 +92,39 @@ const PackingList = ({items}) => {
     </div>
 }
 
-const Stats = ({ total }) => {
-    return <div className="stats">
-        <p> You have {total} items on your list</p>
-    </div>
+const Item = ({ item }) => {
+    return <li>
+        <input type="checkbox" />
+        <span style={item.packed ? {textDecoration: 'line-through'} : {}}>
+            {`${item.quantity} ${item.name}`}
+        </span>
+        <button style={{color: 'red'}}>X</button>
+    </li>
 }
+
+const Stats = ({ totalItems, packedItems }) => {
+    const [isEmpty, setIsEmpty] = useState(true);
+    const [percentage, setPercentage] = useState(0);
+
+    useEffect(() => {
+        if (totalItems > 0) {
+            setIsEmpty(false);
+
+        setPercentage(totalItems); // Set percentage directly if total represents the packed percentage.
+        } else {
+            setIsEmpty(true);
+        }
+    }, [totalItems]); // Make sure to include 'total' in the dependency array to recalculate when it changes.
+
+    return (
+        <footer className="stats">
+            {isEmpty ? (
+                <em>Start adding some items to your packing list.</em>
+            ) : (
+                <em>You have {total} items on your list, and you already packed {percentage}%.</em>
+            )}
+        </footer>
+    );
+};
+
 export default App
