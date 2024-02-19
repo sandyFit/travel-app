@@ -6,17 +6,29 @@ const App = () => {
 
     const addItem = (item, quantity) => {
         // Directly add the item as an object with name and quantity
-        const newItem = { name: item, quantity: parseInt(quantity, 10) }; // Ensure quantity is a number
+        const newItem = { name: item, quantity: parseInt(quantity, 10), packed: false, id: Date.now() }; // Ensure quantity is a number
         setItems([...items, newItem]);
         setTotalItems(totalItems + quantity)
+    }
 
+    const deleteItem = (id) => {
+        setItems(items => items.filter((item) => item.id !== id));
+    }
+
+    const toggleItem = id => {
+        setItems(items =>
+            items.map(item =>
+                item.id === id ? { ...item, packed: !item.packed }
+                    : item
+
+        ))
     }
 
     return (
         <main>
             <Logo />
-            <Form onAddItem={ addItem } />
-            <PackingList items={items} />
+            <Form onAddItem={ addItem }  />
+            <PackingList items={items} onDeleteItem={deleteItem} onToggleItem={ toggleItem } />
             <Stats total={ totalItems } />
         </main>
     )
@@ -77,11 +89,15 @@ const Form = ({ onAddItem }) => {
     </form>
 }
 
-const PackingList = ({items}) => { 
+const PackingList = ({items, onDeleteItem, onToggleItem}) => { 
     return <div className="list">
         <ul>            
             {items.map((item, index) => (
-                <Item key={index} item={item} />
+                <Item key={index}
+                    item={item}
+                    onDeleteItem={onDeleteItem}
+                    onToggleItem={onToggleItem}
+                />
             ))}
         </ul>
         
@@ -92,14 +108,22 @@ const PackingList = ({items}) => {
     </div>
 }
 
-const Item = ({ item }) => {
-    return <li>
-        <input type="checkbox" />
+const Item = ({ item, onDeleteItem, onToggleItem}) => {
+
+
+    return (
+        <li>
+        <input type="checkbox" value={item.packed} onChange={() => onToggleItem(item.id)}/>
         <span style={item.packed ? {textDecoration: 'line-through'} : {}}>
             {`${item.quantity} ${item.name}`}
         </span>
-        <button style={{color: 'red'}}>X</button>
-    </li>
+        <button style={{ color: 'red' }}
+            onClick={() => onDeleteItem(item.id)}
+        >
+            X
+        </button>
+        </li>
+    )
 }
 
 const Stats = ({ totalItems, packedItems }) => {
@@ -127,4 +151,4 @@ const Stats = ({ totalItems, packedItems }) => {
     );
 };
 
-export default App
+export default App;
