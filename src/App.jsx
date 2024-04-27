@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
+import Logo from './components/Logo';
+import Form from './components/Form';
+import PackingList from './components/PackingList';
+import Stats from './components/Stats';
 
 const App = () => {
     const [items, setItems] = useState([]);
-    const [totalItems, setTotalItems] = useState(0);
+    
 
     const addItem = (item, quantity) => {
         // Directly add the item as an object with name and quantity
         const newItem = { name: item, quantity: parseInt(quantity, 10), packed: false, id: Date.now() }; // Ensure quantity is a number
         setItems([...items, newItem]);
-        setTotalItems(totalItems + quantity)
+        
     }
 
     const deleteItem = (id) => {
@@ -24,92 +28,34 @@ const App = () => {
         ))
     }
 
+    const handleClearList = () => {
+        const confirmed = window.confirm('are you sure you want to clea the list?');
+
+        if (confirmed) setItems([]);
+
+    }
+
     return (
         <main>
             <Logo />
             <Form onAddItem={ addItem }  />
-            <PackingList items={items} onDeleteItem={deleteItem} onToggleItem={ toggleItem } />
-            <Stats total={ totalItems } />
+            <PackingList items={items}
+                onDeleteItem={deleteItem}
+                onToggleItem={toggleItem}
+                onClearList ={handleClearList}
+            />
+            <Stats items={items} />
         </main>
     )
 }
 
-const Logo = () => { 
-    return <h1>🏝 Far Away 💼</h1>
-}
 
-// onAddItem as a prop calls the function with the new item when the form is submitted.
-const Form = ({ onAddItem }) => { 
 
-    const [item, setItem] = useState(''); 
-    const [quantity, setQuantity] = useState(1); // This state allows for adding multiple items at once
 
-    const handleSubmit = e => {
-        e.preventDefault();
 
-        if (!item || quantity < 1) return;
-             
-        onAddItem(item, quantity);
-        setItem('');
-        setQuantity(1);
-        
-    }
 
-    return <form
-        className="add-form"
-        onSubmit={handleSubmit}>
-        <h3>
-            What do you need for your 😍 trip?
-        </h3>
-
-        <div >
-
-            <select name='quantity'
-                id='quantity'
-                value={quantity}
-                onChange={e => setQuantity(Number(e.target.value))}
-            >
-                {Array.from({ length: 20 }, (_, index) => index + 1).
-                    map(num => (
-                        <option value={num} key={num}>{num}</option>
-                    ))}        
-            </select>
-
-            <input type="text"
-                name="item"
-                placeholder='Item...'
-                value={ item }
-                 onChange={e => setItem(e.target.value)}
-                
-            />
-            
-            <button>add</button>
-        </div>
-
-    </form>
-}
-
-const PackingList = ({items, onDeleteItem, onToggleItem}) => { 
-    return <div className="list">
-        <ul>            
-            {items.map((item, index) => (
-                <Item key={index}
-                    item={item}
-                    onDeleteItem={onDeleteItem}
-                    onToggleItem={onToggleItem}
-                />
-            ))}
-        </ul>
-        
-        <div style={{display: 'flex', gap: '15px'}}>
-            <button>sort by input order</button>
-            <button>clear list</button>
-        </div>
-    </div>
-}
 
 const Item = ({ item, onDeleteItem, onToggleItem}) => {
-
 
     return (
         <li>
@@ -126,29 +72,5 @@ const Item = ({ item, onDeleteItem, onToggleItem}) => {
     )
 }
 
-const Stats = ({ totalItems, packedItems }) => {
-    const [isEmpty, setIsEmpty] = useState(true);
-    const [percentage, setPercentage] = useState(0);
-
-    useEffect(() => {
-        if (totalItems > 0) {
-            setIsEmpty(false);
-
-        setPercentage(totalItems); // Set percentage directly if total represents the packed percentage.
-        } else {
-            setIsEmpty(true);
-        }
-    }, [totalItems]); // Make sure to include 'total' in the dependency array to recalculate when it changes.
-
-    return (
-        <footer className="stats">
-            {isEmpty ? (
-                <em>Start adding some items to your packing list.</em>
-            ) : (
-                <em>You have {total} items on your list, and you already packed {percentage}%.</em>
-            )}
-        </footer>
-    );
-};
 
 export default App;
